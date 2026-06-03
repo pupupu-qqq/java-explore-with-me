@@ -24,7 +24,7 @@ public class StatsService {
 	}
 
 	public void saveHit(HttpServletRequest request) {
-		EndpointHitDto hit = new EndpointHitDto(null, APP_NAME, request.getRequestURI(), request.getRemoteAddr(),
+		EndpointHitDto hit = new EndpointHitDto(null, APP_NAME, request.getRequestURI(), getClientIp(request),
 				LocalDateTime.now());
 		try {
 			statsClient.hit(hit);
@@ -53,6 +53,18 @@ public class StatsService {
 			}
 		}
 		return views;
+	}
+
+	private String getClientIp(HttpServletRequest request) {
+		String forwardedFor = request.getHeader("X-Forwarded-For");
+		if (forwardedFor != null && !forwardedFor.isBlank()) {
+			return forwardedFor.split(",")[0].trim();
+		}
+		String realIp = request.getHeader("X-Real-IP");
+		if (realIp != null && !realIp.isBlank()) {
+			return realIp.trim();
+		}
+		return request.getRemoteAddr();
 	}
 
 	private Long parseEventId(String uri) {
