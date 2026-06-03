@@ -8,6 +8,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStatsDto;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -32,7 +33,7 @@ public class StatsClient {
 	}
 
 	public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-		String uri = buildStatsUri(start, end, uris, unique);
+		URI uri = buildStatsUri(start, end, uris, unique);
 		ResponseEntity<List<ViewStatsDto>> response = restTemplate.exchange(
 				uri,
 				HttpMethod.GET,
@@ -46,7 +47,7 @@ public class StatsClient {
 		return response.getBody();
 	}
 
-	private String buildStatsUri(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+	private URI buildStatsUri(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
 		UriComponentsBuilder builder = UriComponentsBuilder
 				.fromHttpUrl(statsServerUrl + "/stats")
 				.queryParam("start", start.format(FORMATTER))
@@ -60,7 +61,7 @@ public class StatsClient {
 		return builder
 				.build()
 				.encode()
-				.toUriString();
+				.toUri();
 	}
 
 	private String clearLastSlash(String url) {
