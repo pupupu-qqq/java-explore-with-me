@@ -8,13 +8,10 @@ import ru.practicum.stats.mapper.EndpointHitMapper;
 import ru.practicum.stats.repository.StatsRepository;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 public class StatsServiceImpl implements StatsService {
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
 	private final StatsRepository statsRepository;
 
 	public StatsServiceImpl(StatsRepository statsRepository) {
@@ -27,16 +24,14 @@ public class StatsServiceImpl implements StatsService {
 	}
 
 	@Override
-	public List<ViewStatsDto> getStats(String start, String end, List<String> uris, boolean unique) {
-		LocalDateTime startTime = LocalDateTime.parse(start, FORMATTER);
-		LocalDateTime endTime = LocalDateTime.parse(end, FORMATTER);
-		if (startTime.isAfter(endTime)) {
+	public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+		if (start.isAfter(end)) {
 			throw new IncorrectDateException("Start date must be before end date");
 		}
 		if (uris == null || uris.isEmpty()) {
-			return getStatsWithoutUris(startTime, endTime, unique);
+			return getStatsWithoutUris(start, end, unique);
 		}
-		return getStatsByUris(startTime, endTime, uris, unique);
+		return getStatsByUris(start, end, uris, unique);
 	}
 
 	private List<ViewStatsDto> getStatsWithoutUris(LocalDateTime start, LocalDateTime end, boolean unique) {
