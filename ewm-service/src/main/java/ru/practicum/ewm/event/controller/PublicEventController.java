@@ -13,7 +13,6 @@ import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.model.EventSort;
 import ru.practicum.ewm.event.service.EventService;
-import ru.practicum.ewm.stats.StatsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,11 +22,9 @@ import java.util.List;
 @RequestMapping("/events")
 public class PublicEventController {
 	private final EventService eventService;
-	private final StatsService statsService;
 
-	public PublicEventController(EventService eventService, StatsService statsService) {
+	public PublicEventController(EventService eventService) {
 		this.eventService = eventService;
-		this.statsService = statsService;
 	}
 
 	@GetMapping
@@ -41,13 +38,12 @@ public class PublicEventController {
 											@RequestParam(defaultValue = "0") @PositiveOrZero int from,
 											@RequestParam(defaultValue = "10") @Min(1) int size,
 											HttpServletRequest request) {
-		statsService.saveHit(request);
-		return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+		return eventService.searchPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size,
+				request);
 	}
 
 	@GetMapping("/{id}")
 	public EventFullDto getEvent(@PathVariable Long id, HttpServletRequest request) {
-		statsService.saveHit(request);
-		return eventService.getPublicEvent(id);
+		return eventService.getPublicEvent(id, request);
 	}
 }

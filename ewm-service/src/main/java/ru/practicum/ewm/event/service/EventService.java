@@ -1,5 +1,6 @@
 package ru.practicum.ewm.event.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -184,7 +185,9 @@ public class EventService {
 											Boolean onlyAvailable,
 											EventSort sort,
 											int from,
-											int size) {
+											int size,
+											HttpServletRequest request) {
+		statsService.saveHit(request);
 		validateRange(rangeStart, rangeEnd);
 		LocalDateTime start = rangeStart == null ? LocalDateTime.now() : rangeStart;
 		Specification<Event> specification = Specification
@@ -211,7 +214,8 @@ public class EventService {
 	}
 
 	@Transactional(readOnly = true)
-	public EventFullDto getPublicEvent(Long eventId) {
+	public EventFullDto getPublicEvent(Long eventId, HttpServletRequest request) {
+		statsService.saveHit(request);
 		Event event = getEventEntity(eventId);
 		if (event.getState() != EventState.PUBLISHED) {
 			throw new NotFoundException("Event with id=" + eventId + " was not found");

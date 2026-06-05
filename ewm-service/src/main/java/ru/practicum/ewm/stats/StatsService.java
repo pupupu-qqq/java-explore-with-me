@@ -1,6 +1,8 @@
 package ru.practicum.ewm.stats;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.EndpointHitDto;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 @Service
 public class StatsService {
+	private static final Logger LOG = LoggerFactory.getLogger(StatsService.class);
 	private static final String APP_NAME = "ewm-main-service";
 	private static final LocalDateTime STATS_START = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
 
@@ -44,6 +47,7 @@ public class StatsService {
 		try {
 			stats = statsClient.getStats(STATS_START, LocalDateTime.now().plusSeconds(1), uris, true);
 		} catch (RuntimeException exception) {
+			LOG.warn("Failed to get event views from stats service", exception);
 			return views;
 		}
 		for (ViewStatsDto stat : stats) {
