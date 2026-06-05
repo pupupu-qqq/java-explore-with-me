@@ -1,5 +1,6 @@
 package ru.practicum.ewm.comment.service;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.comment.dto.CommentDto;
@@ -22,6 +23,8 @@ import java.util.List;
 
 @Service
 public class CommentService {
+	private static final Sort COMMENTS_SORT = Sort.by(Sort.Direction.DESC, "createdOn");
+
 	private final CommentRepository commentRepository;
 	private final UserService userService;
 	private final EventService eventService;
@@ -53,7 +56,7 @@ public class CommentService {
 		if (event.getState() != EventState.PUBLISHED) {
 			throw new NotFoundException("Event with id=" + eventId + " was not found");
 		}
-		return commentRepository.findAllByEventIdOrderByCreatedOnDesc(eventId, new OffsetPageRequest(from, size))
+		return commentRepository.findAllByEvent(event, new OffsetPageRequest(from, size, COMMENTS_SORT))
 				.stream()
 				.map(CommentMapper::toDto)
 				.toList();
@@ -61,8 +64,8 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public List<CommentDto> getUserComments(Long userId, int from, int size) {
-		userService.getById(userId);
-		return commentRepository.findAllByAuthorIdOrderByCreatedOnDesc(userId, new OffsetPageRequest(from, size))
+		User user = userService.getById(userId);
+		return commentRepository.findAllByAuthor(user, new OffsetPageRequest(from, size, COMMENTS_SORT))
 				.stream()
 				.map(CommentMapper::toDto)
 				.toList();
@@ -90,10 +93,10 @@ public class CommentService {
 	}
 
 	private Comment getUserComment(Long userId, Long commentId) {
-		userService.getById(userId);
+		User user = userService.getById(userId);
 		Comment comment = commentRepository.findById(commentId)
 				.orElseThrow(() -> new NotFoundException("Comment with id=" + commentId + " was not found"));
-		if (!comment.getAuthor().getId().equals(userId)) {
+		if (!comment.getAuthor().getId().equals(user.getId())) {
 			throw new NotFoundException("Comment with id=" + commentId + " was not found");
 		}
 		return comment;
